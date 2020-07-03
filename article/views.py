@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-# Create your views here.
+from .forms import ArticlePostForm
+from django.contrib.auth.models import User
 from .models import ArticlePost
 import markdown
 
@@ -28,3 +29,21 @@ def article_detail(request, id):
     context = {'article': article}
     # 载入模板，并返回context
     return render(request, 'article/detail.html', context)
+
+
+# 写文章
+def article_create(request):
+    if request.method == "POST":
+        article_post_form = ArticlePostForm(data=request.POST)
+        if article_post_form.is_valid():
+            new_article = article_post_form.save(commit=False)
+            new_article.author = User.objects.get(id=1)
+            new_article.save()
+            return redirect("article:article_list")
+        else:
+            return HttpResponse("表单内容有误，请重新提交。")
+
+    else:
+        article_post_form = ArticlePostForm()
+        context = {'article_post_form':article_post_form}
+        return render(request,'article/create.html',context)
