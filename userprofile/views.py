@@ -50,3 +50,17 @@ def user_register(request):
         return render(request, 'userprofile/register.html', context)
     else:
         return HttpResponse("请使用GET或者POST请求数据")
+
+
+@login_required(login_url='/userprofile/login/')
+def user_delete(request, id):
+    if request.method == 'POST':
+        user = User.objects.get(id=id)
+        if request.user == user:
+            logout(request)
+            user.delete()
+            return redirect("article:article_list")
+        else:
+            return HttpResponse("你没有删除操作的权限")
+    else:
+        return HttpResponse("仅接受post请求")
